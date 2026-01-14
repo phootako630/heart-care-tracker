@@ -1,0 +1,5 @@
+{
+  "name": "HealthTracker (Elderly Care)",
+  "description": "A high-contrast, large-font health management web app designed for post-surgery elderly patients to track INR, blood pressure, and medications.",
+  "requestFramePermissions": []
+}
