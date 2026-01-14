@@ -15,12 +15,15 @@ export function useBloodPressureRecords() {
         return;
       }
 
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
       const { data, error } = await supabase
         .from('blood_pressure_records')
         .select('*')
         .eq('user_id', user.id)
-        .order('record_time', { ascending: false })
-        .limit(10);
+        .gte('record_time', ninetyDaysAgo.toISOString())
+        .order('record_time', { ascending: false });
 
       if (error) throw error;
 

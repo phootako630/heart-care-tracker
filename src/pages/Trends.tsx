@@ -5,9 +5,18 @@ import INRTrendChart from '../components/features/INRTrendChart';
 import BloodPressureTrendChart from '../components/features/BloodPressureTrendChart';
 import HeartRateTrendChart from '../components/features/HeartRateTrendChart';
 import MedicationAdherenceCalendar from '../components/features/MedicationAdherenceCalendar';
+import HistoryList from '../components/features/HistoryList';
+import { useINRRecords } from '../hooks/useINRRecords';
+import { useBloodPressureRecords } from '../hooks/useBloodPressureRecords';
+import { useHeartRateRecords } from '../hooks/useHeartRateRecords';
 
 const Trends = () => {
   const [timeRange, setTimeRange] = useState<7 | 30 | 90>(30);
+  
+  // 获取数据传给 HistoryList
+  const { records: inrRecords } = useINRRecords();
+  const { records: bpRecords } = useBloodPressureRecords();
+  const { records: hrRecords } = useHeartRateRecords();
 
   return (
     <div className="bg-gray-50 min-h-full pb-6">
@@ -34,7 +43,7 @@ const Trends = () => {
           <BloodPressureTrendChart days={timeRange} />
         </Card>
 
-        {/* 心率趋势 (新增) */}
+        {/* 心率趋势 */}
         <Card title="静息心率变化">
           <HeartRateTrendChart days={timeRange} />
         </Card>
@@ -43,6 +52,18 @@ const Trends = () => {
         <Card title="用药打卡记录">
           <MedicationAdherenceCalendar />
         </Card>
+        
+        {/* 详细历史列表 */}
+        <div className="pt-4 border-t-2 border-gray-200">
+          <h2 className="text-elder-lg font-bold text-dark mb-4">
+            历史数据明细
+          </h2>
+          <HistoryList 
+            inrRecords={inrRecords}
+            bpRecords={bpRecords}
+            hrRecords={hrRecords}
+          />
+        </div>
       </div>
     </div>
   );

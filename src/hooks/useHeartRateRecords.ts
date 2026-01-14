@@ -15,12 +15,15 @@ export function useHeartRateRecords() {
         return;
       }
 
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
       const { data, error } = await supabase
         .from('heart_rate_records')
         .select('*')
         .eq('user_id', user.id)
-        .order('record_time', { ascending: false })
-        .limit(10);
+        .gte('record_time', ninetyDaysAgo.toISOString())
+        .order('record_time', { ascending: false });
 
       if (error) {
         console.warn("Could not fetch heart rate records", error);

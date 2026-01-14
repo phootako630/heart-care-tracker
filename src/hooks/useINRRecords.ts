@@ -16,17 +16,20 @@ export function useINRRecords() {
         return;
       }
 
+      // 计算90天前的日期
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
       const { data, error } = await supabase
         .from('inr_records')
         .select('*')
         .eq('user_id', user.id)
-        .order('record_time', { ascending: false })
-        .limit(10);
+        .gte('record_time', ninetyDaysAgo.toISOString()) // 获取最近90天
+        .order('record_time', { ascending: false });
 
       if (error) throw error;
 
       if (data) {
-        // 转换数据库下划线字段到前端驼峰字段
         const formattedData: INRRecord[] = data.map(item => ({
           id: item.id,
           value: item.value,
@@ -68,7 +71,6 @@ export function useINRRecords() {
 
       if (error) throw error;
       
-      // 插入成功后刷新列表
       await fetchRecords();
       return true;
     } catch (error) {
