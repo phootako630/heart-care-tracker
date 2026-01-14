@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局基础样式 */
+@layer base {
+  body {
+    /* 禁止文字选择，减少老年人误操作 */
+    @apply select-none antialiased bg-[#F1FAEE] text-[#1D3557];
+  }
+  
+  /* 优化移动端点击高亮 */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* 滚动条隐藏但保留功能 (可选) */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
