@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
 import { BloodPressureRecord } from '../types';
 
-const DEMO_USER_ID = "demo-user-1";
-
 export function useBloodPressureRecords() {
   const [records, setRecords] = useState<BloodPressureRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -11,10 +9,16 @@ export function useBloodPressureRecords() {
   const fetchRecords = useCallback(async () => {
     try {
       setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setRecords([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('blood_pressure_records')
         .select('*')
-        .eq('user_id', DEMO_USER_ID)
+        .eq('user_id', user.id)
         .order('record_time', { ascending: false })
         .limit(10);
 
@@ -44,8 +48,11 @@ export function useBloodPressureRecords() {
 
   const addRecord = async (systolic: number, diastolic: number, heartRate: number | undefined, position: 'sitting' | 'lying') => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user logged in");
+
       const { error } = await supabase.from('blood_pressure_records').insert({
-        user_id: DEMO_USER_ID,
+        user_id: user.id,
         systolic,
         diastolic,
         heart_rate: heartRate,

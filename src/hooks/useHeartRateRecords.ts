@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabase';
-import { INRRecord } from '../types';
+import { HeartRateRecord } from '../types';
 
-export function useINRRecords() {
-  const [records, setRecords] = useState<INRRecord[]>([]);
+export function useHeartRateRecords() {
+  const [records, setRecords] = useState<HeartRateRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchRecords = useCallback(async () => {
     try {
       setLoading(true);
-      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setRecords([]);
@@ -17,28 +16,29 @@ export function useINRRecords() {
       }
 
       const { data, error } = await supabase
-        .from('inr_records')
+        .from('heart_rate_records')
         .select('*')
         .eq('user_id', user.id)
         .order('record_time', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.warn("Could not fetch heart rate records", error);
+        return;
+      }
 
       if (data) {
-        // 转换数据库下划线字段到前端驼峰字段
-        const formattedData: INRRecord[] = data.map(item => ({
+        const formattedData: HeartRateRecord[] = data.map(item => ({
           id: item.id,
-          value: item.value,
+          bpm: item.bpm,
           recordTime: new Date(item.record_time),
-          isInRange: item.is_in_range,
-          targetRange: [item.target_range_low, item.target_range_high],
+          status: item.bpm > 100 ? 'fast' : item.bpm < 60 ? 'slow' : 'normal',
           note: item.note
         }));
         setRecords(formattedData);
       }
     } catch (error) {
-      console.error("Error fetching INR records:", error);
+      console.error("Error fetching heart rate records:", error);
     } finally {
       setLoading(false);
     }
@@ -48,31 +48,24 @@ export function useINRRecords() {
     fetchRecords();
   }, [fetchRecords]);
 
-  const addRecord = async (value: number) => {
+  const addRecord = async (bpm: number) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user logged in");
 
-      const targetRange = [2.0, 3.0];
-      const isInRange = value >= targetRange[0] && value <= targetRange[1];
-
-      const { error } = await supabase.from('inr_records').insert({
+      const { error } = await supabase.from('heart_rate_records').insert({
         user_id: user.id,
-        value,
+        bpm,
         record_time: new Date().toISOString(),
-        is_in_range: isInRange,
-        target_range_low: targetRange[0],
-        target_range_high: targetRange[1],
         note: ''
       });
 
       if (error) throw error;
       
-      // 插入成功后刷新列表
       await fetchRecords();
       return true;
     } catch (error) {
-      console.error("Error adding INR record:", error);
+      console.error("Error adding heart rate record:", error);
       return false;
     }
   };

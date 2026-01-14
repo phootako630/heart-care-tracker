@@ -3,6 +3,7 @@ import Card from '../components/ui/Card';
 import TimeRangeSelector from '../components/features/TimeRangeSelector';
 import INRTrendChart from '../components/features/INRTrendChart';
 import BloodPressureTrendChart from '../components/features/BloodPressureTrendChart';
+import HeartRateTrendChart from '../components/features/HeartRateTrendChart';
 import MedicationAdherenceCalendar from '../components/features/MedicationAdherenceCalendar';
 
 const Trends = () => {
@@ -31,6 +32,11 @@ const Trends = () => {
         {/* 血压趋势 */}
         <Card title="血压变化趋势">
           <BloodPressureTrendChart days={timeRange} />
+        </Card>
+
+        {/* 心率趋势 (新增) */}
+        <Card title="静息心率变化">
+          <HeartRateTrendChart days={timeRange} />
         </Card>
 
         {/* 用药依从性 */}

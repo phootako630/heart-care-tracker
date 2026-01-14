@@ -25,6 +25,16 @@ export interface BloodPressureRecord {
   position: 'sitting' | 'lying'; // 测量体位：坐位/卧位
 }
 
+// 心率记录
+// 用于单独记录脉搏/心率，特别是使用手环或血氧仪测量时
+export interface HeartRateRecord {
+  id: string;
+  bpm: number;              // 次/分 (Beats Per Minute)
+  recordTime: Date;
+  status: 'normal' | 'fast' | 'slow'; // 状态：正常、过快、过慢
+  note?: string;
+}
+
 // 药品定义
 // 用于管理患者的用药清单
 export interface Medication {

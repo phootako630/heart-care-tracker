@@ -1,6 +1,7 @@
 import React from 'react';
 import INRRecordCard from '../components/features/INRRecordCard';
 import BloodPressureCard from '../components/features/BloodPressureCard';
+import HeartRateCard from '../components/features/HeartRateCard';
 import MedicationCheckList from '../components/features/MedicationCheckList';
 
 const Home = () => {
@@ -26,8 +27,6 @@ const Home = () => {
 
       {/* 内容区域 */}
       <div className="p-6 flex flex-col gap-6">
-        {/* 重要提醒：如果所有药都没吃，可以在这里加个顶部Banner */}
-        
         {/* 1. 抗凝指标 (最重要) */}
         <section>
           <INRRecordCard />
@@ -38,7 +37,12 @@ const Home = () => {
           <BloodPressureCard />
         </section>
 
-        {/* 3. 用药打卡 */}
+        {/* 3. 心率记录 (新增) */}
+        <section>
+          <HeartRateCard />
+        </section>
+
+        {/* 4. 用药打卡 */}
         <section className="mb-4">
           <MedicationCheckList />
         </section>
