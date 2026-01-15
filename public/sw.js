@@ -1,4 +1,4 @@
-const CACHE_NAME = 'health-tracker-v1';
+const CACHE_NAME = 'health-tracker-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -15,6 +15,8 @@ self.addEventListener('install', (event) => {
       return cache.addAll(urlsToCache);
     })
   );
+  // 强制立即激活，让新 SW 接管，防止旧缓存阻碍更新
+  self.skipWaiting();
 });
 
 // 拦截网络请求
@@ -25,6 +27,28 @@ self.addEventListener('fetch', (event) => {
   // 忽略 chrome-extension 等协议
   if (!event.request.url.startsWith('http')) return;
 
+  // 策略 1: 针对 HTML 页面 (Navigation) 使用 Network First
+  // 这可以确保每次加载页面时都获取最新的 index.html (包含最新的 CSS/JS hash 链接)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // 网络请求成功，更新缓存
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // 网络请求失败（离线），使用缓存
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // 策略 2: 针对静态资源和图片 使用 Cache First (Stale-While-Revalidate logic optimized)
   event.respondWith(
     caches.match(event.request).then((response) => {
       // 1. 缓存命中，直接返回缓存
@@ -39,14 +63,11 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
         
-        // 3. 将新响应加入缓存 (Supabase API 请求通常不在此处缓存，由 React Query 处理)
-        // 这里主要缓存 JS/CSS/Image 资源
-        const responseToCache = response.clone();
-        
-        // 过滤掉 API 请求，避免缓存动态数据
+        // 3. 将新响应加入缓存
+        // 过滤掉 API 请求 (Supabase)
         if (!event.request.url.includes('supabase.co')) {
              caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
+              cache.put(event.request, response.clone());
             });
         }
         
@@ -71,4 +92,6 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  // 立即接管所有客户端，确保新样式立即生效
+  event.waitUntil(self.clients.claim());
 });

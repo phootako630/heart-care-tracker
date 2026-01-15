@@ -16,7 +16,7 @@ root.render(
 );
 
 // 注册 Service Worker 以支持 PWA 和离线能力
-if ('serviceWorker' in navigator) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
@@ -26,5 +26,14 @@ if ('serviceWorker' in navigator) {
       .catch((error) => {
         console.log('SW 注册失败:', error);
       });
+  });
+} 
+// 在开发环境，主动注销可能存在的 Service Worker，防止缓存干扰开发
+else if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (let registration of registrations) {
+      registration.unregister();
+      console.log('开发环境：已注销 Service Worker 以清除缓存');
+    }
   });
 }
